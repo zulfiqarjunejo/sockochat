@@ -1,20 +1,27 @@
 import express from "express";
+import http from "http";
 import path from "path";
-const app = express();
-const port = 8080; // default port to listen
+import socketio from "socket.io";
 
-// Configure Express to use EJS
+const app = express();
+const port = 8080;
+const server = http.createServer(app);
+const io = socketio(server);
+
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
-// define a route handler for the default home page
 app.get("/", (req, res) => {
-    // render the index template
     res.render("index");
 });
 
-// start the express server
-app.listen(port, () => {
+io.on("connection", (socket) => {
+    socket.on("chat message client", (message) => {
+        io.emit("chat message server", message);
+    });
+});
+
+server.listen(port, () => {
     // tslint:disable-next-line:no-console
     console.log(`server started at http://localhost:${port}`);
 });
